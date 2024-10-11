@@ -1,0 +1,58 @@
+﻿@page "/userform/{Id:int?}"
+@using BlazorUserApp.Models
+@using BlazorUserApp.Services
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+
+<h3>@(user.Id == 0 ? "Add User" : "Edit User")</h3>
+
+<EditForm Model="user" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>First Name:</label>
+        <InputText @bind-Value="user.FirstName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Last Name:</label>
+        <InputText @bind-Value="user.LastName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Email:</label>
+        <InputText @bind-Value="user.Email" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Phone Number:</label>
+        <InputText @bind-Value="user.PhoneNumber" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+</EditForm>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private User user = new User();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            user = await UserService.GetUserById(Id.Value);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (user.Id == 0)
+        {
+            await UserService.AddUser(user);
+        }
+        else
+        {
+            await UserService.UpdateUser(user.Id, user);
+        }
+
+        NavigationManager.NavigateTo("/users");
+    }
+}
